@@ -9,13 +9,13 @@ import (
 )
 
 type Validator struct {
-	HasErr  bool              //是否严重有错
-	ErrList map[string]string //校验错误列表
+	HasErr  bool              // check if validate has error
+	ErrList map[string]string // error params list
 }
 
 type Rules map[string]string
 
-//初始化Validator
+// new validator
 func New() *Validator {
 	return &Validator{
 		HasErr:  false,
@@ -23,13 +23,11 @@ func New() *Validator {
 	}
 }
 
-/**
-form直接传bingo.MergeRequest中处理返回的键值对请求数据
-rules参数形式:, map[string]string{
-	"param1": "numeric|min:10",
-	"param1": "numeric|min:10",
-}
-*/
+// form直接传bingo.MergeRequest中处理返回的键值对请求数据
+// rules like:, map[string]string{
+//	"param1": "numeric|min:10",
+//	"param1": "numeric|min:10",
+//}
 func (v *Validator) Validate(form *map[string]string, rules Rules) *Validator {
 	v.HasErr = false //单个字段校验结果是否有错
 	for field, rule := range rules {
@@ -142,6 +140,14 @@ func (v *Validator) Validate(form *map[string]string, rules Rules) *Validator {
 				}
 			}
 
+			if method == "int" {
+				if v.int32(field, form) == false {
+					v.HasErr = true
+					v.ErrList[field] = "非32位整型"
+					continue
+				}
+			}
+
 			if method == "datetime" {
 				if v.datetime(field, form) == false {
 					v.HasErr = true
@@ -170,7 +176,7 @@ func (v *Validator) Validate(form *map[string]string, rules Rules) *Validator {
 	return v
 }
 
-//判断参数是否为空
+// notEmpty that means param not exist or param is null character
 func (*Validator) notEmpty(field string, form *map[string]string) bool {
 	v, ok := (*form)[field]
 	if !ok || v == "" {
@@ -179,7 +185,7 @@ func (*Validator) notEmpty(field string, form *map[string]string) bool {
 	return true
 }
 
-//手机号验证
+// chinese mobile validate
 func (*Validator) mobile(field string, form *map[string]string) bool {
 	v, _ := (*form)[field]
 	if ok, _ := regexp.MatchString("^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\\d{8}$", v); ok {
@@ -188,7 +194,7 @@ func (*Validator) mobile(field string, form *map[string]string) bool {
 	return false
 }
 
-//密码验证 密码8-16位数字和字母的组合这两个符号(不能是纯数字或者纯字母)
+// password validate 密码验证 密码8-16位数字和字母的组合这两个符号(不能是纯数字或者纯字母)
 func (*Validator) password(field string, form *map[string]string) bool {
 	v, _ := (*form)[field]
 	if ok, _ := regexp.MatchString("^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{8,16}$", v); ok {
@@ -197,7 +203,7 @@ func (*Validator) password(field string, form *map[string]string) bool {
 	return false
 }
 
-//用户昵称校验 中文和英文或数字不能有特殊符号长度为2-10位
+// user nick validate 用户昵称校验 中文和英文或数字不能有特殊符号长度为2-10位
 func (*Validator) nick(field string, form *map[string]string) bool {
 	v, _ := (*form)[field]
 	if ok, _ := regexp.MatchString("^[a-zA-Z0-9\u4e00-\u9fff]{2,10}$", v); ok {
@@ -206,7 +212,7 @@ func (*Validator) nick(field string, form *map[string]string) bool {
 	return false
 }
 
-//正则校验
+// regex validate
 func (*Validator) regex(field string, form *map[string]string, pattern string) bool {
 	v, _ := (*form)[field]
 	if ok, _ := regexp.MatchString(pattern, v); ok {
@@ -215,7 +221,7 @@ func (*Validator) regex(field string, form *map[string]string, pattern string) b
 	return false
 }
 
-//最小只不能小于xx 即验证大于等于arg数值, 下限
+// numeric param min number param >= arg
 func (*Validator) min(field string, form *map[string]string, arg string) bool {
 	v, _ := (*form)[field]
 	number, err := strconv.Atoi(v)
@@ -229,7 +235,7 @@ func (*Validator) min(field string, form *map[string]string, arg string) bool {
 	return false
 }
 
-//最大值不能大于xx 即验证小于等于 arg数值, 上限
+// numeric param max number param <= arg
 func (*Validator) max(field string, form *map[string]string, arg string) bool {
 	v, _ := (*form)[field]
 	number, err := strconv.Atoi(v)
@@ -243,7 +249,7 @@ func (*Validator) max(field string, form *map[string]string, arg string) bool {
 	return false
 }
 
-//数值型
+// numeric
 func (*Validator) numeric(field string, form *map[string]string) bool {
 	v, _ := (*form)[field]
 	_, err := strconv.ParseFloat(v, 64)
@@ -253,7 +259,7 @@ func (*Validator) numeric(field string, form *map[string]string) bool {
 	return true
 }
 
-//字符串最大长度
+// param maxLength
 func (*Validator) maxLength(field string, form *map[string]string, arg string) bool {
 	v, _ := (*form)[field]
 	maxLength, err := strconv.Atoi(arg)
@@ -266,7 +272,7 @@ func (*Validator) maxLength(field string, form *map[string]string, arg string) b
 	return false
 }
 
-//字符串最小长度
+// param minLength
 func (*Validator) minLength(field string, form *map[string]string, arg string) bool {
 	v, _ := (*form)[field]
 	minLength, err := strconv.Atoi(arg)
@@ -307,7 +313,7 @@ func (*Validator) datetime(field string, form *map[string]string) bool {
 	return true
 }
 
-//检测在某些数据内  in:1,2,3
+// in:1,2,3
 func (*Validator) in(field string, form *map[string]string, arg string) bool {
 	v, _ := (*form)[field]
 	args := strings.Split(arg, ",")
@@ -320,7 +326,7 @@ func (*Validator) in(field string, form *map[string]string, arg string) bool {
 	return false
 }
 
-//检测参数 不要在某些数据内  notIn:1,2,3
+// notIn:1,2,3
 func (v *Validator) notIn(field string, form *map[string]string, arg string) bool {
 	return !v.in(field, form, arg)
 }
