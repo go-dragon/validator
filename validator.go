@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"encoding/json"
 	"regexp"
 	"strconv"
 	"strings"
@@ -171,6 +172,13 @@ func (v *Validator) Validate(form *map[string]string, rules Rules) *Validator {
 					continue
 				}
 			}
+			if method == "json" {
+				if v.json(field, form) == false {
+					v.HasErr = true
+					v.ErrList[field] = "参数不是json"
+					continue
+				}
+			}
 		}
 	}
 	return v
@@ -329,4 +337,16 @@ func (*Validator) in(field string, form *map[string]string, arg string) bool {
 // notIn:1,2,3
 func (v *Validator) notIn(field string, form *map[string]string, arg string) bool {
 	return !v.in(field, form, arg)
+}
+
+// json: {"hello":"world"}
+func (v *Validator) json(field string, form *map[string]string) bool {
+	if _, ok := (*form)[field]; ok {
+		var data map[string]string
+		err := json.Unmarshal([]byte((*form)[field]), &data)
+		if err != nil {
+			return false
+		}
+	}
+	return true
 }

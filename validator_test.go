@@ -76,4 +76,24 @@ func TestValidator(t *testing.T) {
 	} else {
 		log.Fatal("in not in test fail")
 	}
+
+
+	// test json
+	v = New()
+	data = map[string]string{
+		"data":  `{"x":"y"}`,
+		"data2": `{}`,
+		//"data3": `{"x"ss}`,
+	}
+	rules = map[string]string{
+		"data":  "json",
+		"data2": "json",
+		"data3": "json",
+	}
+	v.Validate(&data, rules)
+	if v.HasErr == false {
+		log.Println("json test success")
+	} else {
+		log.Fatal("json test fail")
+	}
 }
