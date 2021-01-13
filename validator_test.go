@@ -57,9 +57,22 @@ func TestValidator(t *testing.T) {
 	}
 	v.Validate(&data, rules)
 	if v.HasErr == true {
-		log.Fatal("datetime test fail")
+		log.Fatal("datetime 2016-09-13 08:33:12 test fail")
 	}
 	log.Println("datetime test success")
+
+	v = New()
+	data = map[string]string{
+		"date": "2016-09-13",
+	}
+	rules = map[string]string{
+		"date": "date",
+	}
+	v.Validate(&data, rules)
+	if v.HasErr == true {
+		log.Fatal("date 2016-09-13 test fail")
+	}
+	log.Println("date test success")
 
 	v = New()
 	data = map[string]string{
