@@ -416,7 +416,7 @@ func (v *Validator) notIn(field string, form *map[string]string, arg string) boo
 // json: {"hello":"world"}
 func (v *Validator) json(field string, form *map[string]string) bool {
 	if _, ok := (*form)[field]; ok {
-		var data map[string]string
+		var data map[string]interface{}
 		err := json.Unmarshal([]byte((*form)[field]), &data)
 		if err != nil {
 			return false

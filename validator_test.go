@@ -96,6 +96,25 @@ func TestValidator(t *testing.T) {
 	data = map[string]string{
 		"data":  `{"x":"y"}`,
 		"data2": `{}`,
+		"data3": `{
+    "data":{
+        "number4":{
+            "value":123456
+        },
+        "thing1":{
+            "value":"商品名称"
+        },
+        "time2":{
+            "value":"2015年01月05日"
+        },
+        "thing3":{
+            "value":"活动开始"
+        }
+    },
+    "template_id":"B7OVInOeXaBBmyzTUTuzlQVVt_pZzlPFlMZFq5ShK5o",
+    "open_id":"osKI44zdKJxIKkXjDWOQEIcZnDEk",
+    "page":"pages/samples/home/home"
+}`,
 		//"data3": `{"x"ss}`,
 	}
 	rules = map[string]string{
